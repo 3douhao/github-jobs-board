@@ -31,7 +31,7 @@ const Jobs = () => {
     })
   }
 
-  const { jobs, loading, error } = useGetJobs(params, page)
+  const { jobs, loading, error, hasNextPage } = useGetJobs(params, page)
   return (
     <Container>
       <h2>jobs</h2>
@@ -47,7 +47,7 @@ const Jobs = () => {
         &lt;
       </button>
       <button className='active'>{page}</button>
-      <button onClick={() => handlePageChange(1)} disabled={jobs.length < 50}>
+      <button onClick={() => handlePageChange(1)} disabled={!hasNextPage}>
         &gt;
       </button>
       {jobs &&

@@ -7,7 +7,8 @@ const BASE_URL =
 const ACTIONS = {
   MAKE_REQUEST: 'make-request',
   GET_DATA: 'get-data',
-  ERROR: 'error'
+  ERROR: 'error',
+  HAS_NEXT_PAGE: 'has-next-page'
 }
 const reducer = (state, action) => {
   switch (action.type) {
@@ -23,6 +24,12 @@ const reducer = (state, action) => {
         error: action.payload.error,
         ...state,
         loading: false
+      }
+
+    case ACTIONS.HAS_NEXT_PAGE:
+      return {
+        ...state,
+        hasNextPage: action.payload.hasNextPage
       }
 
     default:
@@ -63,8 +70,32 @@ export default function useGetJobs (params, page) {
         })
       })
 
+    const cancelToken2 = axios.CancelToken.source()
+    axios
+      .get(BASE_URL, {
+        cancelToken: cancelToken.token2,
+        params: { ...params, page: page + 1, markdown: true }
+      })
+      .then(res => {
+        dispatch({
+          type: ACTIONS.HAS_NEXT_PAGE,
+          payload: {
+            hasNextPage: res.data.length !== 0
+          }
+        })
+      })
+      .catch(e => {
+        if (axios.isCancel(e)) return
+        dispatch({
+          type: ACTIONS.ERROR,
+          payload: {
+            error: e
+          }
+        })
+      })
     return () => {
       cancelToken.cancel()
+      cancelToken2.cancel()
     }
   }, [params, page])
 
